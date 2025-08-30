@@ -135,6 +135,15 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+.hero-gradient {
+  background: radial-gradient(
+    ellipse at center 50%,
+    hsla(0, 72%, 85%, 0.6) 0%,
+    hsla(24, 62%, 90%, 0.4) 40%,
+    var(--background) 70%
+  );
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
