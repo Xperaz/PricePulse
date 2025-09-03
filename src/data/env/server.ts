@@ -6,6 +6,7 @@ export const env = createEnv({
   server: {
     DATABASE_URL: z.url(),
     CLERK_SECRET_KEY: z.string(),
+    CLERK_WEB_SECRET_HOOK: z.string(),
   },
   experimental__runtimeEnv: process.env,
 });
