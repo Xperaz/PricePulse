@@ -1,7 +1,6 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
@@ -15,14 +14,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-
-const productDetailsFormSchema = z.object({
-  name: z.string().min(1, "required"),
-  url: z.url().min(1, "required"),
-  description: z.string().optional(),
-});
-
-type ProductDetailsDto = z.infer<typeof productDetailsFormSchema>;
+import {
+  ProductDetailsDto,
+  productDetailsFormSchema,
+} from "@/schemas/products";
+import { createProduct } from "@/app/server/actions/products";
+import { toast } from "sonner";
 
 export function ProductDetailsForm() {
   const form = useForm<ProductDetailsDto>({
@@ -34,8 +31,14 @@ export function ProductDetailsForm() {
     },
   });
 
-  const handleSubmit = (data: ProductDetailsDto) => {
-    console.log(data);
+  const handleSubmit = async (values: ProductDetailsDto) => {
+    const data = await createProduct(values);
+
+    if (data.error) {
+      toast.error("There was an error creating your product.");
+    } else {
+      toast.success("Product created successfully!");
+    }
   };
 
   return (
