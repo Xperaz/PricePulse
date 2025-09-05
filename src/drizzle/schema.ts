@@ -29,7 +29,7 @@ export const ProductTable = pgTable(
   "products",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    clerkUserId: uuid("clerk_user_id").notNull(),
+    clerkUserId: text("clerk_user_id").notNull(),
     name: text("name").notNull(),
     url: text("url").notNull(),
     description: text("description"),
