@@ -7,6 +7,7 @@ import {
 import { auth } from "@clerk/nextjs/server";
 import { createProduct as dbCreateProduct } from "@/app/server/db/products";
 import { redirect } from "next/navigation";
+import { deleteProduct as dbDeleteProduct } from "@/app/server/db/products";
 
 export async function createProduct(payload: ProductDetailsDto) {
   const { userId } = await auth();
@@ -19,4 +20,25 @@ export async function createProduct(payload: ProductDetailsDto) {
   const { id } = await dbCreateProduct({ ...data, clerkUserId: userId });
 
   redirect(`/dashboard/products/${id}/edit?tab=countries`);
+}
+
+export async function deleteProduct(id: string) {
+  const { userId } = await auth();
+
+  const errorMessage = "There was an error deleting your product.";
+  if (userId === null) {
+    return {
+      error: true,
+      message: errorMessage,
+    };
+  }
+
+  const isSuccess = await dbDeleteProduct({ id, userId });
+
+  return {
+    error: !isSuccess,
+    message: isSuccess ? "Successfully deleted your product." : errorMessage,
+  };
+
+  redirect("/dashboard/products");
 }
