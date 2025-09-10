@@ -18,26 +18,30 @@ import {
   ProductDetailsDto,
   productDetailsFormSchema,
 } from "@/schemas/products";
-import { createProduct } from "@/app/server/actions/products";
+import { createProduct, updateProduct } from "@/app/server/actions/products";
 import { toast } from "sonner";
+import { ProductDto } from "@/types/products";
 
-export function ProductDetailsForm() {
+export function ProductDetailsForm({ product }: { product?: ProductDto }) {
   const form = useForm<ProductDetailsDto>({
     resolver: zodResolver(productDetailsFormSchema),
     defaultValues: {
-      name: "",
-      url: "",
-      description: "",
+      name: product?.name || "",
+      url: product?.url || "",
+      description: product?.description || "",
     },
   });
 
   const handleSubmit = async (values: ProductDetailsDto) => {
-    const data = await createProduct(values);
+    const action = product
+      ? updateProduct(values, product.id)
+      : createProduct(values);
+    const data = await action;
 
     if (data.error) {
-      toast.error("There was an error creating your product.");
+      toast.error(data.message);
     } else {
-      toast.success("Product created successfully!");
+      toast.success(data.message);
     }
   };
 
@@ -47,13 +51,13 @@ export function ProductDetailsForm() {
         onSubmit={form.handleSubmit(handleSubmit)}
         className="flex flex-col gap-6"
       >
-        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 ">
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
           <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Product Name</FormLabel>
+                <FormLabel className="-mt-6">Product Name</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -62,23 +66,25 @@ export function ProductDetailsForm() {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="url"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Enter your website URL</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormDescription className="text-start">
-                  Make sure to include http:// or https:// and the full path to
-                  the sales page.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="flex flex-col gap-1 md:mt-10 xl:mt-6">
+            <FormField
+              control={form.control}
+              name="url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="">Enter your website URL</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <span className="text-sm text-muted-foreground">
+              Make sure to include http:// or https:// and the full path to the
+              sales page.
+            </span>
+          </div>
         </div>
         <FormField
           control={form.control}

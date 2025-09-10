@@ -9,6 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
@@ -19,6 +20,7 @@ type DeleteProductAlertDialogContentProps = {
 export function DeleteProductAlertDialogContent({
   id,
 }: DeleteProductAlertDialogContentProps) {
+  const router = useRouter();
   const [isDeletePending, startDeleteTransition] = useTransition();
 
   const handleProductDeletion = () => {
@@ -28,6 +30,7 @@ export function DeleteProductAlertDialogContent({
         toast.error(response.message);
       } else {
         toast.success(response.message);
+        router.push("/dashboard/products");
       }
     });
   };
