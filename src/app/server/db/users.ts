@@ -1,12 +1,39 @@
 import { db } from "@/drizzle/db";
 import { ProductTable, UserSubscriptionTable } from "@/drizzle/schema";
+import { CACHE_TAGS, revalidateDbCache } from "@/lib/cache";
 import { eq } from "drizzle-orm";
 
 export async function deleteUser(clerkUserId: string) {
-  return await db.batch([
+  const [userSubscriptions, products] = await db.batch([
     db
       .delete(UserSubscriptionTable)
-      .where(eq(UserSubscriptionTable.clerkUserId, clerkUserId)),
-    db.delete(ProductTable).where(eq(ProductTable.clerkUserId, clerkUserId)),
+      .where(eq(UserSubscriptionTable.clerkUserId, clerkUserId))
+      .returning({
+        id: UserSubscriptionTable.id,
+      }),
+    db
+      .delete(ProductTable)
+      .where(eq(ProductTable.clerkUserId, clerkUserId))
+      .returning({
+        id: ProductTable.id,
+      }),
   ]);
+
+  userSubscriptions.forEach((sub) => {
+    revalidateDbCache({
+      tag: CACHE_TAGS.subscription,
+      userId: clerkUserId,
+      id: sub.id,
+    });
+  });
+
+  products.forEach((product) => {
+    revalidateDbCache({
+      tag: CACHE_TAGS.products,
+      userId: clerkUserId,
+      id: product.id,
+    });
+  });
+
+  return [userSubscriptions, products];
 }

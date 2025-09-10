@@ -1,10 +1,28 @@
 import { db } from "@/drizzle/db";
 import { UserSubscriptionTable } from "@/drizzle/schema";
+import { CACHE_TAGS, revalidateDbCache } from "@/lib/cache";
 
 export async function createUserSubscription(
   data: typeof UserSubscriptionTable.$inferInsert
 ) {
-  return db.insert(UserSubscriptionTable).values(data).onConflictDoNothing({
-    target: UserSubscriptionTable.clerkUserId,
-  });
+  const [newSubscription] = await db
+    .insert(UserSubscriptionTable)
+    .values(data)
+    .onConflictDoNothing({
+      target: UserSubscriptionTable.clerkUserId,
+    })
+    .returning({
+      id: UserSubscriptionTable.id,
+      userId: UserSubscriptionTable.clerkUserId,
+    });
+
+  if (newSubscription !== null && newSubscription !== undefined) {
+    revalidateDbCache({
+      tag: CACHE_TAGS.subscription,
+      userId: newSubscription.userId,
+      id: newSubscription.id,
+    });
+  }
+
+  return newSubscription;
 }

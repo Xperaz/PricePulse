@@ -37,7 +37,7 @@ export function ProductCard({ product }: { product: ProductDto }) {
   const { id, name, url, description } = product;
 
   return (
-    <Card>
+    <Card className="max-w-full">
       <CardHeader>
         <div className="flex justify-between items-end gap-2">
           <CardTitle>
@@ -77,7 +77,9 @@ export function ProductCard({ product }: { product: ProductDto }) {
             <AddToSiteProductModalContent id={id} />
           </Dialog>
         </div>
-        <CardDescription>{url}</CardDescription>
+        <CardDescription className="text-contain w-full truncate">
+          {url}
+        </CardDescription>
       </CardHeader>
       {description && <CardContent>{description}</CardContent>}
     </Card>
