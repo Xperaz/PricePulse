@@ -3,11 +3,30 @@ import { ProductCustomizationTable, ProductTable } from "@/drizzle/schema";
 import {
   CACHE_TAGS,
   dbCache,
+  getGlobalTag,
   getIdTag,
   getUserTag,
   revalidateDbCache,
 } from "@/lib/cache";
 import { and, eq } from "drizzle-orm";
+
+export function getProductCountryGroups({
+  userId,
+  productId,
+}: {
+  userId: string;
+  productId: string;
+}) {
+  const cacheFn = dbCache(getProductCountryGroupsInternal, {
+    tags: [
+      getIdTag(userId, CACHE_TAGS.products),
+      getGlobalTag(CACHE_TAGS.countries),
+      getGlobalTag(CACHE_TAGS.countryGroups),
+    ],
+  });
+
+  return cacheFn({ userId, productId });
+}
 
 export function getProducts(userId: string, { limit }: { limit?: number }) {
   const cacheFn = dbCache(getInternalProducts, {
@@ -88,6 +107,45 @@ export async function deleteProduct({
   revalidateDbCache({ tag: CACHE_TAGS.products, userId, id });
 
   return rowCount > 0;
+}
+
+async function getProductCountryGroupsInternal({
+  userId,
+  productId,
+}: {
+  userId: string;
+  productId: string;
+}) {
+  const product = await getProduct({ id: productId, userId });
+
+  if (product === null) return [];
+
+  const data = await db.query.CountryGroupTable.findMany({
+    with: {
+      countries: {
+        columns: {
+          code: true,
+          name: true,
+        },
+      },
+      countryGroupDiscounts: {
+        columns: {
+          coupon: true,
+          discountPercentage: true,
+        },
+        where: ({ productId: id }, { eq }) => eq(id, productId),
+        limit: 1,
+      },
+    },
+  });
+
+  return data.map((group) => ({
+    id: group.id,
+    name: group.name,
+    recommendedDiscountPercentage: group.recommendedDiscountPercentage,
+    countries: group.countries,
+    discount: group.countryGroupDiscounts.at(0),
+  }));
 }
 
 async function getInternalProducts(

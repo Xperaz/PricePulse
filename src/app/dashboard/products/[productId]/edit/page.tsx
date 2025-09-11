@@ -1,8 +1,16 @@
+import { CountryDiscountsForm } from "@/app/dashboard/_components/forms/CountryDiscountsForm";
 import { ProductDetailsForm } from "@/app/dashboard/_components/forms/ProductDetailsForm";
 import { PageWithBackButton } from "@/app/dashboard/_components/PageWithBackButton";
-import { getProduct } from "@/app/server/db/products";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getProduct, getProductCountryGroups } from "@/app/server/db/products";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CountryGroupDto } from "@/types/countries";
 import { ProductDto } from "@/types/products";
 import { auth } from "@clerk/nextjs/server";
 import { TabsContent } from "@radix-ui/react-tabs";
@@ -19,7 +27,7 @@ export default async function EditProductPage({
   if (userId === null) return redirectToSignIn();
 
   const product = await getProduct({ id: productId, userId });
-  if (product === null) return notFound();
+  if (product === null || product === undefined) return notFound();
 
   return (
     <PageWithBackButton
@@ -34,17 +42,14 @@ export default async function EditProductPage({
         </TabsList>
 
         <TabsContent value="details" className="mt-6">
-          {/* @ts-expect-error Server Component */}
           <DetailsTab product={product} />
         </TabsContent>
 
         <TabsContent value="country" className="mt-6">
-          {/* @ts-expect-error Server Component */}
           <CountryTab product={product} />
         </TabsContent>
 
         <TabsContent value="customization" className="mt-6">
-          {/* @ts-expect-error Server Component */}
           <CustomizationTab product={product} />
         </TabsContent>
       </Tabs>
@@ -65,18 +70,33 @@ const DetailsTab = ({ product }: { product: ProductDto }) => {
   );
 };
 
-const CountryTab = ({ product }: { product: ProductDto }) => {
+async function CountryTab({ product }: { product: ProductDto }) {
+  const countryGroups: CountryGroupDto[] = await getProductCountryGroups({
+    userId: product.clerkUserId,
+    productId: product.id,
+  });
+
+  console.log(countryGroups);
+
+  if (countryGroups.length === 0) {
+    return <div>No country groups found.</div>;
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Product Country</CardTitle>
+        <CardTitle className="text-xl">Product Discounts</CardTitle>
+        <CardDescription>
+          Leave the discount field empty if you do not want to display deals for
+          any specific parity group.
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <div>Country form will go here</div>
+        <CountryDiscountsForm countryGroups={countryGroups} />
       </CardContent>
     </Card>
   );
-};
+}
 
 const CustomizationTab = ({ product }: { product: ProductDto }) => {
   return (

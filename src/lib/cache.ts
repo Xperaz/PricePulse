@@ -10,6 +10,8 @@ export const CACHE_TAGS = {
   products: "products",
   productViews: "productViews",
   subscription: "subscription",
+  countries: "countries",
+  countryGroups: "countryGroups",
 } as const;
 
 export type CacheTag = (typeof CACHE_TAGS)[keyof typeof CACHE_TAGS];
