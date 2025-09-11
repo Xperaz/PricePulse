@@ -2,6 +2,7 @@
   "name": "price-pulse",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
@@ -9,7 +10,8 @@
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:updateCountryGroups": "tsx --env-file=.env ./src/tasks/updateCountryGroup.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.31.6",

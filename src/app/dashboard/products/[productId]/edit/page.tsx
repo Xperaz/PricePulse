@@ -76,8 +76,6 @@ async function CountryTab({ product }: { product: ProductDto }) {
     productId: product.id,
   });
 
-  console.log(countryGroups);
-
   if (countryGroups.length === 0) {
     return <div>No country groups found.</div>;
   }

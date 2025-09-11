@@ -1,6 +1,7 @@
 "use server";
 
 import {
+  ProductCountryDiscountsDto,
   ProductDetailsDto,
   productDetailsFormSchema,
 } from "@/schemas/products";
@@ -59,3 +60,16 @@ export async function deleteProduct(id: string) {
     message: isSuccess ? "Successfully deleted your product." : errorMessage,
   };
 }
+
+// export async function updateCountryDiscounts(
+//   productId: string,
+//   data: ProductCountryDiscountsDto
+// ) {
+//   const { userId } = await auth();
+//   const { success, data: parsedData } =
+//     productDetailsFormSchema.safeParse(data);
+
+//   if (!success || userId === null) {
+//     return { error: true, message: "There wa an error updating discounts." };
+//   }
+// }
