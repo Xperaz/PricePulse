@@ -23,6 +23,20 @@ export function getProductCountryGroups({
   productId: string;
 }) {
   const cacheFn = dbCache(getProductCountryGroupsInternal, {
+    tags: [getIdTag(userId, CACHE_TAGS.products)],
+  });
+
+  return cacheFn({ userId, productId });
+}
+
+export function getProductCustomization({
+  userId,
+  productId,
+}: {
+  userId: string;
+  productId: string;
+}) {
+  const cacheFn = dbCache(getProductCustomizationInternal, {
     tags: [
       getIdTag(userId, CACHE_TAGS.products),
       getGlobalTag(CACHE_TAGS.countries),
@@ -235,4 +249,22 @@ async function getInternalProduct({
     where: ({ clerkUserId, id: idCol }, { eq, and }) =>
       and(eq(clerkUserId, userId), eq(idCol, id)),
   });
+}
+
+async function getProductCustomizationInternal({
+  userId,
+  productId,
+}: {
+  userId: string;
+  productId: string;
+}) {
+  const data = await db.query.ProductTable.findFirst({
+    where: ({ id, clerkUserId }, { eq, and }) =>
+      and(eq(id, productId), eq(clerkUserId, userId)),
+    with: {
+      customizations: true,
+    },
+  });
+
+  return data?.customizations;
 }

@@ -1,7 +1,12 @@
 import { CountryDiscountsForm } from "@/app/dashboard/_components/forms/CountryDiscountsForm";
 import { ProductDetailsForm } from "@/app/dashboard/_components/forms/ProductDetailsForm";
 import { PageWithBackButton } from "@/app/dashboard/_components/PageWithBackButton";
-import { getProduct, getProductCountryGroups } from "@/app/server/db/products";
+import {
+  getProduct,
+  getProductCountryGroups,
+  getProductCustomization,
+} from "@/app/server/db/products";
+import { canRemoveBranding } from "@/app/server/permissions";
 import {
   Card,
   CardContent,
@@ -99,15 +104,24 @@ async function CountryTab({ product }: { product: ProductDto }) {
   );
 }
 
-const CustomizationTab = ({ product }: { product: ProductDto }) => {
+async function CustomizationTab({ product }: { product: ProductDto }) {
+  const customizations = await getProductCustomization({
+    userId: product.clerkUserId,
+    productId: product.id,
+  });
+
+  if (customizations === null) return notFound();
+
+  const canRemoveBrand = await canRemoveBranding(product.clerkUserId);
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Product Customization</CardTitle>
+        <CardTitle className="text-xl">Banner Customization</CardTitle>
       </CardHeader>
       <CardContent>
         <div>Customization form will go here</div>
       </CardContent>
     </Card>
   );
-};
+}
