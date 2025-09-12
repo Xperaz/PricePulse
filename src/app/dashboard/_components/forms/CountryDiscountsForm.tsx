@@ -19,13 +19,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+import { updateCountryDiscounts } from "@/app/server/actions/products";
+import { toast } from "sonner";
 
 type CountryDiscountsFormProps = {
   countryGroups: CountryGroupDto[];
+  productId: string;
 };
 
 export function CountryDiscountsForm({
   countryGroups,
+  productId,
 }: CountryDiscountsFormProps) {
   const form = useForm<ProductCountryDiscountsDto>({
     resolver: zodResolver(productCountryDiscountsFormSchema),
@@ -45,7 +49,12 @@ export function CountryDiscountsForm({
   });
 
   const handleSubmit = async (values: ProductCountryDiscountsDto) => {
-    console.log(values);
+    const response = await updateCountryDiscounts(productId, values);
+    if (!response.error) {
+      toast.success(response.message);
+    } else {
+      toast.error(response.message);
+    }
   };
 
   return (
@@ -92,7 +101,7 @@ export function CountryDiscountsForm({
                             type="number"
                             className="w-48"
                             {...field}
-                            value={field.value ?? ""}
+                            value={field.value?.toFixed(2) ?? ""}
                             onChange={(e) =>
                               field.onChange(e.target.valueAsNumber)
                             }

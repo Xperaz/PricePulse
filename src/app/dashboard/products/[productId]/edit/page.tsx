@@ -90,7 +90,10 @@ async function CountryTab({ product }: { product: ProductDto }) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <CountryDiscountsForm countryGroups={countryGroups} />
+        <CountryDiscountsForm
+          countryGroups={countryGroups}
+          productId={product.id}
+        />
       </CardContent>
     </Card>
   );

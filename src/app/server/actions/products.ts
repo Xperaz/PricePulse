@@ -2,6 +2,7 @@
 
 import {
   ProductCountryDiscountsDto,
+  productCountryDiscountsFormSchema,
   ProductDetailsDto,
   productDetailsFormSchema,
 } from "@/schemas/products";
@@ -10,6 +11,7 @@ import { createProduct as dbCreateProduct } from "@/app/server/db/products";
 import { redirect } from "next/navigation";
 import { deleteProduct as dbDeleteProduct } from "@/app/server/db/products";
 import { updateProduct as dbUpdateProduct } from "@/app/server/db/products";
+import { updateCountryDiscounts as DbUpdateCountryDiscounts } from "@/app/server/db/products";
 
 export async function createProduct(payload: ProductDetailsDto) {
   const { userId } = await auth();
@@ -61,15 +63,56 @@ export async function deleteProduct(id: string) {
   };
 }
 
-// export async function updateCountryDiscounts(
-//   productId: string,
-//   data: ProductCountryDiscountsDto
-// ) {
-//   const { userId } = await auth();
-//   const { success, data: parsedData } =
-//     productDetailsFormSchema.safeParse(data);
+export async function updateCountryDiscounts(
+  id: string,
+  unsafeData: ProductCountryDiscountsDto
+) {
+  const { userId } = await auth();
+  const { success, data } =
+    productCountryDiscountsFormSchema.safeParse(unsafeData);
 
-//   if (!success || userId === null) {
-//     return { error: true, message: "There wa an error updating discounts." };
-//   }
-// }
+  if (!success || userId == null) {
+    return {
+      error: true,
+      message: "There was an error saving your country discounts",
+    };
+  }
+
+  const insert: {
+    countryGroupId: string;
+    productId: string;
+    coupon: string;
+    discountPercentage: number;
+  }[] = [];
+  const deleteIds: { countryGroupId: string }[] = [];
+
+  data.groups.forEach((group) => {
+    if (
+      group.coupon != null &&
+      group.coupon.length > 0 &&
+      group.discountPercentage != null &&
+      group.discountPercentage > 0
+    ) {
+      insert.push({
+        countryGroupId: group.countryGroupId,
+        coupon: group.coupon,
+        discountPercentage: group.discountPercentage / 100,
+        productId: id,
+      });
+    } else {
+      deleteIds.push({ countryGroupId: group.countryGroupId });
+    }
+  });
+
+  const isSuccess = await DbUpdateCountryDiscounts(deleteIds, insert, {
+    productId: id,
+    userId,
+  });
+
+  return {
+    error: !isSuccess,
+    message: isSuccess
+      ? "Successfully updated country discounts."
+      : "There was an error saving your country discounts",
+  };
+}
