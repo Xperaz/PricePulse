@@ -7,3 +7,17 @@ export type ProductDto = {
   createdAt?: Date;
   updatedAt?: Date;
 };
+
+export type ProductCustomizationDto = {
+  id: string;
+  classPrefix: string | null;
+  productId: string;
+  locationMessage: string;
+  backgroundColor: string;
+  textColor: string;
+  fontSize: string;
+  bannerContainer: string;
+  isSticky: boolean;
+  updatedAt: Date;
+  createdAt: Date;
+};

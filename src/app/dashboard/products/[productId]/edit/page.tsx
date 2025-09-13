@@ -1,4 +1,5 @@
 import { CountryDiscountsForm } from "@/app/dashboard/_components/forms/CountryDiscountsForm";
+import { ProductCustomizationForm } from "@/app/dashboard/_components/forms/ProductCustomizationForm";
 import { ProductDetailsForm } from "@/app/dashboard/_components/forms/ProductDetailsForm";
 import { PageWithBackButton } from "@/app/dashboard/_components/PageWithBackButton";
 import {
@@ -6,7 +7,10 @@ import {
   getProductCountryGroups,
   getProductCustomization,
 } from "@/app/server/db/products";
-import { canRemoveBranding } from "@/app/server/permissions";
+import {
+  canCustomizeBanner,
+  canRemoveBranding,
+} from "@/app/server/permissions";
 import {
   Card,
   CardContent,
@@ -105,22 +109,27 @@ async function CountryTab({ product }: { product: ProductDto }) {
 }
 
 async function CustomizationTab({ product }: { product: ProductDto }) {
-  const customizations = await getProductCustomization({
+  const customization = await getProductCustomization({
     userId: product.clerkUserId,
     productId: product.id,
   });
 
-  if (customizations === null) return notFound();
+  if (customization === null || customization === undefined) return notFound();
 
   const canRemoveBrand = await canRemoveBranding(product.clerkUserId);
+  const canCustomizeBan = await canCustomizeBanner(product.clerkUserId);
 
   return (
-    <Card>
+    <Card className="overflow-y-auto">
       <CardHeader>
         <CardTitle className="text-xl">Banner Customization</CardTitle>
       </CardHeader>
       <CardContent>
-        <div>Customization form will go here</div>
+        <ProductCustomizationForm
+          customization={customization}
+          canRemoveBrand={canRemoveBrand}
+          canCustomizeBanner={canCustomizeBan}
+        />
       </CardContent>
     </Card>
   );

@@ -7,7 +7,7 @@ export const productDetailsFormSchema = z.object({
   description: z.string().optional(),
 });
 
-export type ProductDetailsDto = z.infer<typeof productDetailsFormSchema>;
+export type ProductDetailsInputDto = z.infer<typeof productDetailsFormSchema>;
 
 export const productCountryDiscountsFormSchema = z.object({
   groups: z.array(
@@ -43,6 +43,20 @@ export const productCountryDiscountsFormSchema = z.object({
   ),
 });
 
-export type ProductCountryDiscountsDto = z.infer<
+export type ProductCountryDiscountsInputDto = z.infer<
   typeof productCountryDiscountsFormSchema
+>;
+
+export const productCustomizationFormSchema = z.object({
+  classPrefix: z.string().optional(),
+  backgroundColor: z.string().min(1, "required"),
+  textColor: z.string().min(1, "required"),
+  fontSize: z.string().min(1, "required"),
+  locationMessage: z.string().min(1, "required"),
+  bannerContainer: z.string().min(1, "required"),
+  isSticky: z.boolean(),
+});
+
+export type ProductCustomizationInputDto = z.infer<
+  typeof productCustomizationFormSchema
 >;

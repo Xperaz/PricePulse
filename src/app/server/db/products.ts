@@ -188,6 +188,29 @@ export async function updateCountryDiscounts(
   return true;
 }
 
+export async function updateProductCustomization(
+  data: Partial<typeof ProductCustomizationTable.$inferInsert>,
+  { productId, userId }: { productId: string; userId: string }
+) {
+  const product = await getProduct({ id: productId, userId });
+  if (product == null) return false;
+
+  const { rowCount } = await db
+    .update(ProductCustomizationTable)
+    .set(data)
+    .where(eq(ProductCustomizationTable.productId, productId));
+
+  if (rowCount > 0) {
+    revalidateDbCache({
+      tag: CACHE_TAGS.products,
+      userId,
+      id: productId,
+    });
+  }
+
+  return rowCount > 0;
+}
+
 async function getProductCountryGroupsInternal({
   userId,
   productId,

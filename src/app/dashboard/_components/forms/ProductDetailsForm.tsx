@@ -15,15 +15,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
-  ProductDetailsDto,
   productDetailsFormSchema,
+  ProductDetailsInputDto,
 } from "@/schemas/products";
 import { createProduct, updateProduct } from "@/app/server/actions/products";
 import { toast } from "sonner";
 import { ProductDto } from "@/types/products";
 
 export function ProductDetailsForm({ product }: { product?: ProductDto }) {
-  const form = useForm<ProductDetailsDto>({
+  const form = useForm<ProductDetailsInputDto>({
     resolver: zodResolver(productDetailsFormSchema),
     defaultValues: {
       name: product?.name || "",
@@ -32,7 +32,7 @@ export function ProductDetailsForm({ product }: { product?: ProductDto }) {
     },
   });
 
-  const handleSubmit = async (values: ProductDetailsDto) => {
+  const handleSubmit = async (values: ProductDetailsInputDto) => {
     const action = product
       ? updateProduct(values, product.id)
       : createProduct(values);

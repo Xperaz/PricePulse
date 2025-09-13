@@ -1,19 +1,23 @@
 "use server";
 
 import {
-  ProductCountryDiscountsDto,
+  ProductCountryDiscountsInputDto,
   productCountryDiscountsFormSchema,
-  ProductDetailsDto,
+  ProductDetailsInputDto,
   productDetailsFormSchema,
+  ProductCustomizationInputDto,
+  productCustomizationFormSchema,
 } from "@/schemas/products";
 import { auth } from "@clerk/nextjs/server";
 import { createProduct as dbCreateProduct } from "@/app/server/db/products";
 import { redirect } from "next/navigation";
 import { deleteProduct as dbDeleteProduct } from "@/app/server/db/products";
 import { updateProduct as dbUpdateProduct } from "@/app/server/db/products";
-import { updateCountryDiscounts as DbUpdateCountryDiscounts } from "@/app/server/db/products";
+import { updateCountryDiscounts as dbUpdateCountryDiscounts } from "@/app/server/db/products";
+import { updateProductCustomization as dbUpdateProductCustomization } from "@/app/server/db/products";
+import { canCustomizeBanner } from "../permissions";
 
-export async function createProduct(payload: ProductDetailsDto) {
+export async function createProduct(payload: ProductDetailsInputDto) {
   const { userId } = await auth();
   const { success, data } = productDetailsFormSchema.safeParse(payload);
 
@@ -26,7 +30,10 @@ export async function createProduct(payload: ProductDetailsDto) {
   redirect(`/dashboard/products/${id}/edit?tab=countries`);
 }
 
-export async function updateProduct(payload: ProductDetailsDto, id: string) {
+export async function updateProduct(
+  payload: ProductDetailsInputDto,
+  id: string
+) {
   const { userId } = await auth();
   const { success, data } = productDetailsFormSchema.safeParse(payload);
 
@@ -65,7 +72,7 @@ export async function deleteProduct(id: string) {
 
 export async function updateCountryDiscounts(
   id: string,
-  unsafeData: ProductCountryDiscountsDto
+  unsafeData: ProductCountryDiscountsInputDto
 ) {
   const { userId } = await auth();
   const { success, data } =
@@ -104,7 +111,7 @@ export async function updateCountryDiscounts(
     }
   });
 
-  const isSuccess = await DbUpdateCountryDiscounts(deleteIds, insert, {
+  const isSuccess = await dbUpdateCountryDiscounts(deleteIds, insert, {
     productId: id,
     userId,
   });
@@ -114,5 +121,35 @@ export async function updateCountryDiscounts(
     message: isSuccess
       ? "Successfully updated country discounts."
       : "There was an error saving your country discounts",
+  };
+}
+
+export async function updateProductCustomization(
+  id: string,
+  unsafeData: ProductCustomizationInputDto
+) {
+  const { userId } = await auth();
+  const { success, data } =
+    productCustomizationFormSchema.safeParse(unsafeData);
+
+  const canCustomize = await canCustomizeBanner(userId);
+
+  if (!success || userId == null || !canCustomize) {
+    return {
+      error: true,
+      message: "There was an error saving your customization",
+    };
+  }
+
+  const isSuccess = await dbUpdateProductCustomization(data, {
+    productId: id,
+    userId,
+  });
+
+  return {
+    error: !isSuccess,
+    message: isSuccess
+      ? "Successfully updated customization."
+      : "There was an error saving your customization",
   };
 }

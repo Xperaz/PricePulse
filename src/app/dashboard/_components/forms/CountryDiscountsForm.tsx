@@ -1,7 +1,7 @@
 "use client";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  ProductCountryDiscountsDto,
+  ProductCountryDiscountsInputDto,
   productCountryDiscountsFormSchema,
 } from "@/schemas/products";
 import { CountryGroupDto } from "@/types/countries";
@@ -31,7 +31,7 @@ export function CountryDiscountsForm({
   countryGroups,
   productId,
 }: CountryDiscountsFormProps) {
-  const form = useForm<ProductCountryDiscountsDto>({
+  const form = useForm<ProductCountryDiscountsInputDto>({
     resolver: zodResolver(productCountryDiscountsFormSchema),
     defaultValues: {
       groups: countryGroups.map((group) => {
@@ -48,7 +48,7 @@ export function CountryDiscountsForm({
     },
   });
 
-  const handleSubmit = async (values: ProductCountryDiscountsDto) => {
+  const handleSubmit = async (values: ProductCountryDiscountsInputDto) => {
     const response = await updateCountryDiscounts(productId, values);
     if (!response.error) {
       toast.success(response.message);
