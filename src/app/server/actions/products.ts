@@ -15,13 +15,15 @@ import { deleteProduct as dbDeleteProduct } from "@/app/server/db/products";
 import { updateProduct as dbUpdateProduct } from "@/app/server/db/products";
 import { updateCountryDiscounts as dbUpdateCountryDiscounts } from "@/app/server/db/products";
 import { updateProductCustomization as dbUpdateProductCustomization } from "@/app/server/db/products";
-import { canCustomizeBanner } from "../permissions";
+import { canCreateProduct, canCustomizeBanner } from "../permissions";
 
 export async function createProduct(payload: ProductDetailsInputDto) {
   const { userId } = await auth();
   const { success, data } = productDetailsFormSchema.safeParse(payload);
 
-  if (!success || userId === null) {
+  const canCreate = await canCreateProduct(userId);
+
+  if (!success || userId === null || !canCreate) {
     return { error: true, message: "There wa an error creating your product." };
   }
 
