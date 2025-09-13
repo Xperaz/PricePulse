@@ -47,7 +47,10 @@ export function getProductCustomization({
   return cacheFn({ userId, productId });
 }
 
-export function getProducts(userId: string, { limit }: { limit?: number }) {
+export function getProducts(
+  userId: string,
+  { limit }: { limit?: number } = {}
+) {
   const cacheFn = dbCache(getInternalProducts, {
     tags: [getUserTag(userId, CACHE_TAGS.products)],
   });
