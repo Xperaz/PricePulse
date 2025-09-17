@@ -2,14 +2,12 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { env } from "@/data/env/server";
-import { db } from "@/drizzle/db";
-import { UserSubscriptionTable } from "@/drizzle/schema";
+
 import { createUserSubscription } from "@/app/server/db/subscription";
 import { deleteUser } from "@/app/server/db/users";
 
-// const stripe = new Stripe(env.)
-
 export async function POST(req: Request) {
+  console.log("Received Clerk webhook");
   const headerPayload = headers();
   const svixId = (await headerPayload).get("svix-id");
   const svixTimestamp = (await headerPayload).get("svix-timestamp");
