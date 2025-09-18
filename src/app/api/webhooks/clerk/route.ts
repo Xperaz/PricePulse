@@ -3,8 +3,14 @@ import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { env } from "@/data/env/server";
 
-import { createUserSubscription } from "@/app/server/db/subscription";
+import {
+  createUserSubscription,
+  getUserSubscription,
+} from "@/app/server/db/subscription";
 import { deleteUser } from "@/app/server/db/users";
+import Stripe from "stripe";
+
+const stripe = new Stripe(env.STRIPE_SECRET_KEY);
 
 export async function POST(req: Request) {
   console.log("Received Clerk webhook");
@@ -48,8 +54,13 @@ export async function POST(req: Request) {
     }
     case "user.deleted": {
       if (event.data.id !== null && event.data.id !== undefined) {
+        const userSubscription = await getUserSubscription(event.data.id);
+        if (userSubscription?.stripeSubscriptionId) {
+          await stripe.subscriptions.cancel(
+            userSubscription.stripeSubscriptionId
+          );
+        }
         await deleteUser(event.data.id);
-        // TODO: Delete Stripe Subscription
       }
       break;
     }

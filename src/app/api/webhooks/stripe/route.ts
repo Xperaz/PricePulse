@@ -1,6 +1,6 @@
 import { updateUserSubscription } from "@/app/server/db/subscription";
 import { env } from "@/data/env/server";
-import { getTierByPriceId } from "@/data/subscriptionTiers";
+import { getTierByPriceId, subscriptionTiers } from "@/data/subscriptionTiers";
 import { UserSubscriptionTable } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
@@ -42,10 +42,6 @@ async function handleCreate(subscription: Stripe.Subscription) {
   const customer = subscription.customer;
   const customerId = typeof customer === "string" ? customer : customer.id;
 
-  console.log("Creating subscription for user:", clerkUserId, tier.name);
-  console.log("Stripe subscription ID:", subscription.id);
-  console.log("Stripe customer ID:", customerId);
-
   return await updateUserSubscription(
     eq(UserSubscriptionTable.clerkUserId, clerkUserId),
     {
@@ -57,6 +53,32 @@ async function handleCreate(subscription: Stripe.Subscription) {
   );
 }
 
-async function handleUpdate(subscription: Stripe.Subscription) {}
+async function handleUpdate(subscription: Stripe.Subscription) {
+  const tier = getTierByPriceId(subscription.items.data[0].price.id);
+  const customer = subscription.customer;
+  const customerId = typeof customer === "string" ? customer : customer.id;
+  if (tier == null) {
+    return new Response(null, { status: 500 });
+  }
 
-async function handleDelete(subscription: Stripe.Subscription) {}
+  return await updateUserSubscription(
+    eq(UserSubscriptionTable.stripeCustomerId, customerId),
+    {
+      tier: tier.name,
+    }
+  );
+}
+
+async function handleDelete(subscription: Stripe.Subscription) {
+  const customer = subscription.customer;
+  const customerId = typeof customer === "string" ? customer : customer.id;
+
+  return await updateUserSubscription(
+    eq(UserSubscriptionTable.stripeCustomerId, customerId),
+    {
+      tier: subscriptionTiers.Free.name,
+      stripeSubscriptionId: null,
+      stripeSubscriptionItemId: null,
+    }
+  );
+}

@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import {
   createCancelSession,
   createCheckoutSession,
+  createCustomerPortalSession,
 } from "@/app/server/actions/stripe";
 
 export default async function SubscriptionPage() {
@@ -43,7 +44,7 @@ export default async function SubscriptionPage() {
 
   const createCustomerPortal = async () => {
     "use server";
-    console.log("Creating customer portal link");
+    await createCustomerPortalSession();
   };
 
   return (

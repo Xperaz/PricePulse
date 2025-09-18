@@ -1,17 +1,69 @@
 "use server";
 import { PaidTierNames, subscriptionTiers } from "@/data/subscriptionTiers";
-import { currentUser, User } from "@clerk/nextjs/server";
+import { auth, currentUser, User } from "@clerk/nextjs/server";
 import { getUserSubscription } from "../db/subscription";
 import { Stripe } from "stripe";
 import { env as serverEnv } from "@/data/env/server";
 import { env as clientEnv } from "@/data/env/client";
 import { redirect } from "next/navigation";
+import { SubscriptionDto } from "@/types/subscription";
 
 const stripe = new Stripe(serverEnv.STRIPE_SECRET_KEY);
 
-export async function createCancelSession() {}
+export async function createCancelSession() {
+  const { userId } = await auth();
+  if (userId === null) {
+    return { error: true };
+  }
+  const subscription = await getUserSubscription(userId);
+  if (
+    subscription?.stripeCustomerId == null ||
+    subscription?.stripeSubscriptionId == null
+  ) {
+    return new Response(null, { status: 500 });
+  }
 
-export async function createCustomerPortalSession() {}
+  const portalSession = await stripe.billingPortal.sessions.create({
+    customer: subscription.stripeCustomerId,
+    return_url: `${clientEnv.NEXT_PUBLIC_SERVER_URL}/dashboard/subscription`,
+    flow_data: {
+      type: "subscription_cancel",
+      subscription_cancel: {
+        subscription: subscription.stripeSubscriptionId,
+      },
+    },
+  });
+
+  if (portalSession.url === null || portalSession.url === undefined) {
+    return new Response(null, { status: 500 });
+  }
+
+  redirect(portalSession.url);
+}
+
+export async function createCustomerPortalSession() {
+  const { userId } = await auth();
+  if (userId === null) {
+    return { error: true };
+  }
+  const subscription = await getUserSubscription(userId);
+  if (
+    subscription?.stripeCustomerId === null ||
+    subscription?.stripeCustomerId === undefined
+  ) {
+    return { error: true, message: "No subscription found" };
+  }
+
+  const portalSession = await stripe.billingPortal.sessions.create({
+    customer: subscription.stripeCustomerId,
+    return_url: `${clientEnv.NEXT_PUBLIC_SERVER_URL}/dashboard/subscription`,
+  });
+
+  if (portalSession.url === null || portalSession.url === undefined) {
+    return { error: true, message: "No portal session found" };
+  }
+  redirect(portalSession.url);
+}
 
 export async function createCheckoutSession(tier: PaidTierNames) {
   const user = await currentUser();
@@ -30,7 +82,11 @@ export async function createCheckoutSession(tier: PaidTierNames) {
     }
     redirect(url);
   } else {
-    // TODO: Handle upgrading existing subscriptions
+    const url = await getSubscriptionUpgradeSession(tier, subscription);
+    if (url === null || url === undefined) {
+      return new Response(null, { status: 500 });
+    }
+    redirect(url);
   }
 }
 
@@ -54,4 +110,37 @@ async function getCheckoutSession(tier: PaidTierNames, user: User) {
   });
 
   return session.url;
+}
+
+async function getSubscriptionUpgradeSession(
+  tier: PaidTierNames,
+  subscription: SubscriptionDto
+) {
+  if (
+    subscription.stripeCustomerId == null ||
+    subscription.stripeSubscriptionId == null ||
+    subscription.stripeSubscriptionItemId == null
+  ) {
+    return null;
+  }
+
+  const portalSession = await stripe.billingPortal.sessions.create({
+    customer: subscription.stripeCustomerId,
+    return_url: `${clientEnv.NEXT_PUBLIC_SERVER_URL}/dashboard/subscription`,
+    flow_data: {
+      type: "subscription_update_confirm",
+      subscription_update_confirm: {
+        subscription: subscription.stripeSubscriptionId,
+        items: [
+          {
+            id: subscription.stripeSubscriptionItemId,
+            price: subscriptionTiers[tier].stripePriceId?.trim() as string,
+            quantity: 1,
+          },
+        ],
+      },
+    },
+  });
+
+  return portalSession.url;
 }

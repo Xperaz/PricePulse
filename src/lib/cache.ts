@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { revalidateTag, unstable_cache } from "next/cache";
 import { cache } from "react";
 
@@ -14,17 +16,15 @@ export const CACHE_TAGS = {
   countryGroups: "countryGroups",
 } as const;
 
-export type CacheTag = (typeof CACHE_TAGS)[keyof typeof CACHE_TAGS];
-
-export function getGlobalTag(tag: CacheTag) {
+export function getGlobalTag(tag: keyof typeof CACHE_TAGS) {
   return `global:${CACHE_TAGS[tag]}` as const;
 }
 
-export function getUserTag(userId: string, tag: CacheTag) {
+export function getUserTag(userId: string, tag: keyof typeof CACHE_TAGS) {
   return `user:${userId}-${CACHE_TAGS[tag]}` as const;
 }
 
-export function getIdTag(id: string, tag: CacheTag) {
+export function getIdTag(id: string, tag: keyof typeof CACHE_TAGS) {
   return `id:${id}-${CACHE_TAGS[tag]}` as const;
 }
 
@@ -32,7 +32,6 @@ export function clearFullCache() {
   revalidateTag("*");
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function dbCache<T extends (...args: any[]) => Promise<any>>(
   cb: Parameters<typeof unstable_cache<T>>[0],
   { tags }: { tags: ValidTags[] }
@@ -45,15 +44,15 @@ export function revalidateDbCache({
   userId,
   id,
 }: {
-  tag: CacheTag;
+  tag: keyof typeof CACHE_TAGS;
   userId?: string;
   id?: string;
 }) {
   revalidateTag(getGlobalTag(tag));
-  if (userId !== null && userId !== undefined) {
+  if (userId != null) {
     revalidateTag(getUserTag(userId, tag));
   }
-  if (id !== null && id !== undefined) {
+  if (id != null) {
     revalidateTag(getIdTag(id, tag));
   }
 }
