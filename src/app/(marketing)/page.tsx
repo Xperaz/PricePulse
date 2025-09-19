@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { SignUpButton } from "@clerk/nextjs";
 import { ArrowRight, CheckIcon } from "lucide-react";
 import Link from "next/link";
+import { MarqueSlider } from "./_components/MarqueSlider";
 
 export default function HomePage() {
   return (
@@ -40,9 +41,8 @@ export default function HomePage() {
             Trusted by the top modern companies
           </h2>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-16">
-            {/* TODO: Replace with actual logos */}
-            logos to be added here
+          <div className="w-full">
+            <MarqueSlider />
           </div>
         </div>
       </section>
