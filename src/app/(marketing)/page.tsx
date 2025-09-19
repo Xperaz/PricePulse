@@ -144,8 +144,19 @@ function PricingCard({
   canRemoveBranding,
 }: PricingCardProps) {
   const isMostPopular = name === "Standard";
+
   return (
-    <Card>
+    <Card
+      className={cn(
+        "relative shadow-none rounded-3xl overflow-hidden",
+        isMostPopular ? "border-accent border-2" : "border-none"
+      )}
+    >
+      {isMostPopular && (
+        <div className="bg-accent text-accent-foreground absolute py-1 px-10 -right-8 top-24 rotate-45 origin-top-right">
+          Most popular
+        </div>
+      )}
       <CardHeader>
         <div className="text-accent font-semibold mb-8">{name}</div>
         <CardTitle className="text-xl font-bold">
@@ -154,29 +165,27 @@ function PricingCard({
         <CardDescription>
           {formatCompactNumber(maxNumberOfVisits)} pricing page visits/mo
         </CardDescription>
-
-        <CardContent>
-          <SignUpButton>
-            <Button
-              variant={isMostPopular ? "accent" : "default"}
-              className="text-lg w-full rounded-lg"
-            >
-              Get Started
-            </Button>
-          </SignUpButton>
-        </CardContent>
-
-        <CardFooter className="flex flex-col gap-4 items-start">
-          <Feature>
-            {maxNumberOfProducts}{" "}
-            {maxNumberOfProducts === 1 ? "product" : "products"}
-          </Feature>
-          <Feature>Price Pulse discounts</Feature>
-          {canAccessAnalytics && <Feature>Analytics access</Feature>}
-          {canCustomizeBanner && <Feature>Customizable banner</Feature>}
-          {canRemoveBranding && <Feature>Remove PricePulse branding</Feature>}
-        </CardFooter>
       </CardHeader>
+      <CardContent>
+        <SignUpButton>
+          <Button
+            className="text-lg w-full rounded-lg"
+            variant={isMostPopular ? "accent" : "default"}
+          >
+            Get Started
+          </Button>
+        </SignUpButton>
+      </CardContent>
+      <CardFooter className="flex flex-col gap-4 items-start">
+        <Feature className="font-bold">
+          {maxNumberOfProducts}{" "}
+          {maxNumberOfProducts === 1 ? "product" : "products"}
+        </Feature>
+        <Feature>PPP discounts</Feature>
+        {canAccessAnalytics && <Feature>Advanced analytics</Feature>}
+        {canRemoveBranding && <Feature>Remove Easy PPP branding</Feature>}
+        {canCustomizeBanner && <Feature>Banner customization</Feature>}
+      </CardFooter>
     </Card>
   );
 }
