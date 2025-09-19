@@ -49,6 +49,13 @@ export function CountryDiscountsForm({
   });
 
   const handleSubmit = async (values: ProductCountryDiscountsInputDto) => {
+    values.groups = values.groups.map((group) => ({
+      ...group,
+      discountPercentage: group.discountPercentage
+        ? Number(group.discountPercentage.toFixed(2))
+        : undefined,
+    }));
+
     const response = await updateCountryDiscounts(productId, values);
     if (!response.error) {
       toast.success(response.message);

@@ -35,7 +35,6 @@ export default async function SubscriptionPage() {
   }
 
   const tier = await getUserSubscriptionTier({ userId });
-  console.log("User tier:", tier);
   const productCount = await getProductCount(userId);
   const pricingViewCount = await getProductViewCount(
     userId,

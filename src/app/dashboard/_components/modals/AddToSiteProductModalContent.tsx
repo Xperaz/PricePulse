@@ -5,9 +5,9 @@ import {
   DialogContent,
   DialogHeader,
 } from "@/components/ui/dialog";
+import { env } from "@/data/env/client";
 import { DialogDescription, DialogTitle } from "@radix-ui/react-dialog";
 import { CopyCheckIcon, CopyIcon, CopyXIcon } from "lucide-react";
-import { env } from "process";
 import React, { useState } from "react";
 
 type AddToSiteProductModalContentProps = {
@@ -20,7 +20,8 @@ export function AddToSiteProductModalContent({
   id,
 }: AddToSiteProductModalContentProps) {
   const [copyState, setCopyState] = useState<CopyState>("idle");
-  const code = `<script src="${env.NEXT_PUBLIC_SERVER_URL}/api/products/${id}/banner"></script>`;
+  console.log(env.NEXT_PUBLIC_SERVER_URL);
+  const code = `<script src="${env.NEXT_PUBLIC_SERVER_URL}api/products/${id}/banner"></script>`;
   const Icon = getCopyIcon(copyState);
 
   return (
