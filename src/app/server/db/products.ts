@@ -12,7 +12,6 @@ import {
   getUserTag,
   revalidateDbCache,
 } from "@/lib/cache";
-import { removeTrailingSlash } from "@/lib/utils";
 import { and, count, eq, inArray, sql } from "drizzle-orm";
 import { BatchItem } from "drizzle-orm/batch";
 

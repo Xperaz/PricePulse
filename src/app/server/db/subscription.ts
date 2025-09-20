@@ -1,13 +1,7 @@
 import { subscriptionTiers } from "@/data/subscriptionTiers";
 import { db } from "@/drizzle/db";
 import { UserSubscriptionTable } from "@/drizzle/schema";
-import {
-  CACHE_TAGS,
-  clearFullCache,
-  dbCache,
-  getIdTag,
-  revalidateDbCache,
-} from "@/lib/cache";
+import { CACHE_TAGS, dbCache, getIdTag, revalidateDbCache } from "@/lib/cache";
 import { SQL } from "drizzle-orm";
 
 export async function createUserSubscription(

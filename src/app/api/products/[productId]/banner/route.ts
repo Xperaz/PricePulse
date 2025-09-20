@@ -15,8 +15,9 @@ import { createElement } from "react";
 
 export async function GET(
   request: NextRequest,
-  { params: { productId } }: { params: { productId: string } }
+  { params }: { params: Promise<{ productId: string }> }
 ) {
+  const { productId } = await params;
   const headersMap = headers();
   const requestingUrl =
     (await headersMap).get("referer") || (await headersMap).get("origin");

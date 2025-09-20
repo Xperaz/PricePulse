@@ -141,6 +141,7 @@ function PricingCard({
       </CardHeader>
       <CardContent>
         <form
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           action={async (formData: FormData) => {
             "use server";
             if (name === "Free") {
