@@ -1,7 +1,14 @@
 import { subscriptionTiers } from "@/data/subscriptionTiers";
 import { db } from "@/drizzle/db";
 import { UserSubscriptionTable } from "@/drizzle/schema";
-import { CACHE_TAGS, dbCache, getIdTag, revalidateDbCache } from "@/lib/cache";
+import {
+  CACHE_TAGS,
+  dbCache,
+  getIdTag,
+  getGlobalTag,
+  getUserTag,
+  revalidateDbCache,
+} from "@/lib/cache";
 import { SQL } from "drizzle-orm";
 
 export async function createUserSubscription(
@@ -31,7 +38,11 @@ export async function createUserSubscription(
 
 export async function getUserSubscription(userId: string) {
   const cacheFn = dbCache(getUserSubscriptionInternal, {
-    tags: [getIdTag(userId, CACHE_TAGS.subscription)],
+    tags: [
+      getIdTag(userId, CACHE_TAGS.subscription),
+      getUserTag(userId, CACHE_TAGS.subscription),
+      getGlobalTag(CACHE_TAGS.subscription),
+    ],
   });
 
   return cacheFn(userId);
@@ -73,4 +84,8 @@ async function getUserSubscriptionInternal(userId: string) {
   return db.query.UserSubscriptionTable.findFirst({
     where: ({ clerkUserId }, { eq }) => eq(clerkUserId, userId),
   });
+}
+
+export async function forceRevalidateSubscription(userId: string) {
+  revalidateDbCache({ tag: CACHE_TAGS.subscription, userId });
 }
