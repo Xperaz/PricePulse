@@ -8,7 +8,7 @@ export default function MarketingLayout({
   return (
     <div className="selection:bg-[hsl(320, 65%, 52%, 20%)]">
       <NavBar />
-      Marketing Layout {children}
+      {children}
     </div>
   );
 }
